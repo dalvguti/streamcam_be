@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "commonjs",
-  "main": "server-cpanel.js",
+  "main": "server-cpanel-4.js",
   "scripts": {
-    "start": "node server-cpanel.js",
+    "start": "node server-cpanel-4.js",
     "dev": "node server.js",
     "generate-certs": "node generate-certs.js",
     "db:setup": "node scripts/dbSetup.js"
