@@ -62,7 +62,6 @@ const httpServer = http.createServer(app);
 
 // WebSocket signaling server for rooms (avoid dev server HMR path '/ws')
 const { WebSocketServer } = require('ws');
-const wss = new WebSocketServer({ server: httpServer, path: '/signal' });
 
 // Map roomId -> Set of clients
 const roomClients = new Map();
@@ -77,47 +76,55 @@ function broadcastToRoom(roomId, data, except) {
   }
 }
 
-wss.on('connection', (ws) => {
-  ws.on('message', async (msg) => {
-    try {
-      const data = JSON.parse(msg.toString());
-      const { type } = data;
-      if (type === 'join') {
-        const { roomId, userId } = data;
-        ws._roomId = roomId;
-        ws._userId = userId;
-        if (!roomClients.has(roomId)) roomClients.set(roomId, new Set());
-        roomClients.get(roomId).add(ws);
-        broadcastToRoom(roomId, { type: 'peer-joined', userId }, ws);
-      } else if (type === 'signal') {
-        const { roomId, payload } = data;
-        broadcastToRoom(roomId, { type: 'signal', from: ws._userId, payload }, ws);
-      } else if (type === 'live') {
-        const { roomId, isLive } = data;
-        const room = await Room.findByPk(roomId);
-        if (room) {
-          room.isLive = !!isLive;
-          await room.save();
-          broadcastToRoom(roomId, { type: 'live', isLive: room.isLive }, null);
+// WebSocket setup function
+const setupWebSocket = (server) => {
+  const wssInstance = new WebSocketServer({ server, path: '/signal' });
+  
+  wssInstance.on('connection', (ws) => {
+    ws.on('message', async (msg) => {
+      try {
+        const data = JSON.parse(msg.toString());
+        const { type } = data;
+        if (type === 'join') {
+          const { roomId, userId } = data;
+          ws._roomId = roomId;
+          ws._userId = userId;
+          if (!roomClients.has(roomId)) roomClients.set(roomId, new Set());
+          roomClients.get(roomId).add(ws);
+          broadcastToRoom(roomId, { type: 'peer-joined', userId }, ws);
+        } else if (type === 'signal') {
+          const { roomId, payload } = data;
+          broadcastToRoom(roomId, { type: 'signal', from: ws._userId, payload }, ws);
+        } else if (type === 'live') {
+          const { roomId, isLive } = data;
+          const room = await Room.findByPk(roomId);
+          if (room) {
+            room.isLive = !!isLive;
+            await room.save();
+            broadcastToRoom(roomId, { type: 'live', isLive: room.isLive }, null);
+          }
         }
+      } catch (e) {
+        console.error('WS message error:', e.message);
       }
-    } catch (e) {
-      console.error('WS message error:', e.message);
-    }
+    });
+    ws.on('close', () => {
+      const roomId = ws._roomId;
+      const set = roomClients.get(roomId);
+      if (set) {
+        set.delete(ws);
+        if (set.size === 0) roomClients.delete(roomId);
+      }
+    });
   });
-  ws.on('close', () => {
-    const roomId = ws._roomId;
-    const set = roomClients.get(roomId);
-    if (set) {
-      set.delete(ws);
-      if (set.size === 0) roomClients.delete(roomId);
-    }
-  });
-});
+  
+  return wssInstance;
+};
 
 try {
   httpServer.listen(PORT, '0.0.0.0', async () => {
     console.log(`HTTP Server is running on port ${PORT}`);
+    setupWebSocket(httpServer);
     // Ensure tables exist
     await sequelize.sync();
   });
@@ -130,8 +137,10 @@ if (USE_HTTPS) {
   const keyPath = process.env.SSL_KEY_PATH || path.join(__dirname, 'certs', 'server.key');
   if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
     const httpsOptions = { key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) };
-    https.createServer(httpsOptions, app).listen(HTTPS_PORT, '0.0.0.0', () => {
+    const httpsServer = https.createServer(httpsOptions, app);
+    httpsServer.listen(HTTPS_PORT, '0.0.0.0', () => {
       console.log(`HTTPS Server is running on port ${HTTPS_PORT}`);
+      setupWebSocket(httpsServer);
     });
   } else {
     console.log('HTTPS disabled or certificates missing');
