@@ -1,0 +1,31 @@
+Subject: Enable WebSocket Support for Node.js Application on streamcam.gutilopsa.com
+
+Hello Support Team,
+
+I am trying to deploy a Node.js application on streamcam.gutilopsa.com that requires WebSocket connections for real-time video streaming functionality.
+
+The WebSocket connection is currently failing with the error:
+"WebSocket connection to 'wss://streamcam.gutilopsa.com/signal' failed: WebSocket is closed before the connection is established."
+
+I believe this issue is due to Apache's mod_proxy_wstunnel module not being enabled on my account, which is required to proxy WebSocket connections through the reverse proxy to my Node.js application.
+
+Could you please:
+
+1. Enable mod_proxy_wstunnel for my domain (streamcam.gutilopsa.com)
+2. Configure the reverse proxy to properly handle WebSocket upgrade requests
+3. Allow WebSocket connections on the /signal path
+
+My Node.js application is configured to:
+- Run on an internal HTTP port (assigned by cPanel)
+- Handle WebSocket connections at the /signal endpoint
+- Support both ws:// and wss:// protocols
+
+This is a standard requirement for modern real-time web applications and your configuration should support it.
+
+If there are any additional configuration steps I need to take on my end, please let me know.
+
+Thank you for your assistance!
+
+Best regards,
+[Your Name]
+

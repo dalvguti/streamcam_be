@@ -77,12 +77,32 @@ Your app is already configured correctly:
 - ✅ WebSocket endpoint: `/signal`
 - ✅ Auto-detects `ws://` vs `wss://` based on protocol
 - ✅ Works with HTTP and HTTPS servers
+- ✅ Enhanced CORS headers including Upgrade/Connection headers
 - ✅ No special configuration needed in code
 
-The issue is almost always on the **hosting provider side** requiring:
-- mod_proxy_wstunnel enabled
-- Proper upgrade header handling
-- WebSocket proxy configuration
+## The Problem
+
+The error "WebSocket is closed before the connection is established" means:
+
+1. ✅ The browser successfully initiates the WebSocket connection
+2. ✅ The request reaches your server
+3. ❌ The connection closes immediately
+4. 🔍 **Root cause:** cPanel's reverse proxy isn't configured to upgrade WebSocket connections
+
+## cPanel-Specific Requirements
+
+For cPanel Node.js applications, you need:
+
+1. **mod_proxy_wstunnel enabled** on the Apache server
+2. **WebSocket upgrade header** passed through the proxy
+3. **Connection upgrade** properly handled
+
+This is typically a **hosting provider configuration** issue, not something you can fix in your code.
+
+## Files Added
+
+- `.htaccess` - Contains WebSocket proxy rules (may help depending on hosting)
+- `EMAIL_TO_HOSTING_PROVIDER.txt` - Template email to send to support
 
 ## Contact Information Template
 
