@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');
-const { sendSignal, getSignals, clearSignals, getConnectionIds, requestOffer, playYoutube } = require('../controllers/signalingController');
+const { sendSignal, getSignals, clearSignals, getConnectionIds, requestOffer, playYoutube, stopYoutube } = require('../controllers/signalingController');
 
 // All signaling endpoints require authentication
 router.use(authenticate);
@@ -23,6 +23,9 @@ router.post('/request-offer', requestOffer);
 
 // Trigger YouTube audio playback on streamer
 router.post('/play-youtube', playYoutube);
+
+// Stop YouTube audio playback
+router.post('/stop-youtube', stopYoutube);
 
 module.exports = router;
 
