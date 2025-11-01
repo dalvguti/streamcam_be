@@ -59,6 +59,12 @@ exports.getSignals = async (req, res) => {
   const { lastSeen = 0 } = req.query;
 
   const room = getOrCreateRoom(roomId);
+  
+  // Register this user as present in the room
+  if (!room.has(req.userId)) {
+    room.set(req.userId, []);
+  }
+  
   const signals = room.get(req.userId) || [];
   
   // Filter signals we haven't seen yet

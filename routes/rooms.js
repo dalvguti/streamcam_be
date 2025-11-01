@@ -21,6 +21,12 @@ router.post('/manage', authenticate, (req, res, next) => {
 });
 
 // Actions on a specific room
+router.get('/:roomId/status', authenticate, async (req, res) => {
+  const { roomId } = req.params;
+  const room = await require('../models').Room.findByPk(roomId);
+  if (!room) return res.status(404).json({ success: false, message: 'Room not found' });
+  res.json({ success: true, isLive: room.isLive });
+});
 router.patch('/:roomId/live', authenticate, setLiveStatus);
 // Some environments/proxies block PATCH; provide POST fallback
 router.post('/:roomId/live', authenticate, setLiveStatus);
