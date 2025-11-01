@@ -1,13 +1,13 @@
+// Load .env FIRST - before any other requires
+const dotenv = require('dotenv');
+const path = require('path');
+dotenv.config({ path: path.join(__dirname, '.env') });
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
-const path = require('path');
-
-// Load .env BEFORE importing anything that reads process.env
-dotenv.config({ path: require('path').join(__dirname, '.env') });
 
 const { connectDB } = require('./config/database');
 const { sequelize, Room } = require('./models');
