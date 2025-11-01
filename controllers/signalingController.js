@@ -129,6 +129,24 @@ exports.playYoutube = async (req, res) => {
   res.json({ success: true });
 };
 
+exports.stopYoutube = async (req, res) => {
+  const { roomId } = req.body;
+  if (!roomId) return res.status(400).json({ success: false, message: 'Missing roomId' });
+  
+  const room = getOrCreateRoom(roomId);
+  
+  // Send stop command to all users in the room
+  const signal = { from: req.userId, payload: { type: 'stop-youtube' }, timestamp: Date.now() };
+  for (const userId of room.keys()) {
+    if (!room.has(userId)) {
+      room.set(userId, []);
+    }
+    room.get(userId).push(signal);
+  }
+  
+  res.json({ success: true });
+};
+
 // Export for sharing with other controllers
 exports.roomSignals = roomSignals;
 
