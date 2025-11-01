@@ -31,6 +31,7 @@ const { authenticate } = require('./middleware/auth');
 app.use('/api/users', authenticate, require('./routes/users'));
 app.use('/api/rooms', authenticate, require('./routes/rooms'));
 app.use('/api/signaling', require('./routes/signaling'));
+app.use('/api/youtube', require('./routes/youtube'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'StreamCam API', protocol: req.protocol, secure: req.secure });

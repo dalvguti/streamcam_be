@@ -27,6 +27,13 @@ const StreamSession = sequelize.define('StreamSession', {
   endedAt: { type: DataTypes.DATE, allowNull: true },
 });
 
+const YoutubeSound = sequelize.define('YoutubeSound', {
+  id: { type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true },
+  url: { type: DataTypes.STRING(300), allowNull: false },
+  title: { type: DataTypes.STRING(200), allowNull: true },
+  position: { type: DataTypes.INTEGER, defaultValue: 0 },
+});
+
 // Associations
 User.hasMany(Room, { foreignKey: 'ownerId', as: 'rooms' });
 Room.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
@@ -41,6 +48,9 @@ User.belongsToMany(User, {
 Room.hasMany(StreamSession, { foreignKey: 'roomId', as: 'sessions' });
 StreamSession.belongsTo(Room, { foreignKey: 'roomId', as: 'room' });
 
-module.exports = { sequelize, User, Room, Friendship, StreamSession };
+User.hasMany(YoutubeSound, { foreignKey: 'userId', as: 'youtubeSounds' });
+YoutubeSound.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+module.exports = { sequelize, User, Room, Friendship, StreamSession, YoutubeSound };
 
 

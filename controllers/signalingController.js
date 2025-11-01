@@ -111,6 +111,24 @@ exports.requestOffer = async (req, res) => {
   res.json({ success: true });
 };
 
+exports.playYoutube = async (req, res) => {
+  const { roomId, youtubeUrl } = req.body;
+  if (!roomId || !youtubeUrl) return res.status(400).json({ success: false, message: 'Missing fields' });
+  
+  const room = getOrCreateRoom(roomId);
+  
+  // Send play command to all users in the room
+  const signal = { from: req.userId, payload: { type: 'play-youtube', url: youtubeUrl }, timestamp: Date.now() };
+  for (const userId of room.keys()) {
+    if (!room.has(userId)) {
+      room.set(userId, []);
+    }
+    room.get(userId).push(signal);
+  }
+  
+  res.json({ success: true });
+};
+
 // Export for sharing with other controllers
 exports.roomSignals = roomSignals;
 
