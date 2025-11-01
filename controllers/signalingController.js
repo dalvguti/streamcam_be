@@ -91,6 +91,26 @@ exports.getConnectionIds = async (req, res) => {
   res.json({ success: true, userIds });
 };
 
+exports.requestOffer = async (req, res) => {
+  const { roomId } = req.body;
+  if (!roomId) return res.status(400).json({ success: false, message: 'Missing roomId' });
+  
+  const room = getOrCreateRoom(roomId);
+  
+  // Send request to all other users in the room (typically the owner)
+  const signal = { from: req.userId, payload: { type: 'request-offer' }, timestamp: Date.now() };
+  for (const userId of room.keys()) {
+    if (userId !== req.userId) {
+      if (!room.has(userId)) {
+        room.set(userId, []);
+      }
+      room.get(userId).push(signal);
+    }
+  }
+  
+  res.json({ success: true });
+};
+
 // Export for sharing with other controllers
 exports.roomSignals = roomSignals;
 
